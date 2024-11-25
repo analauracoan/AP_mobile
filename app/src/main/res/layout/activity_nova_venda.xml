@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".NovaVendaActivity"
+    android:orientation="vertical"
+    android:background="#F2EAE4" >
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+        <TextView
+            android:id="@+id/text_nome_empresa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#668C3F"
+            android:gravity="center"
+            android:paddingVertical="20dp"
+            android:text="SeuCaixa"
+            android:textColor="#f2f2f2"
+            android:fontFamily="@font/funnelsans_bold"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/text_secao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingVertical="20dp"
+            android:text="Nova Venda"
+            android:fontFamily="@font/funnelsans_bold"
+            android:textSize="25sp"
+            android:background="#B4BFA3"
+            />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/text_selecione_cliente"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingVertical="5dp"
+        android:text="Selecione o cliente"
+        android:fontFamily="@font/funnelsans_regular"
+        android:textSize="20sp"
+        />
+    <Spinner
+        android:id="@+id/spinner_clientes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:spinnerMode="dropdown"
+        android:paddingVertical="8dp"
+        android:layout_marginVertical="5dp"
+        android:layout_marginHorizontal="30dp"
+        />
+
+    <TextView
+        android:id="@+id/text_titulo_venda"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingVertical="10dp"
+        android:text="Venda"
+        android:fontFamily="@font/funnelsans_extrabold"
+        android:textSize="30sp"
+        />
+
+    <TextView
+        android:id="@+id/text_titulo_produtos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingVertical="10dp"
+        android:text="Produtos"
+        android:fontFamily="@font/funnelsans_regular"
+        android:textSize="22sp"
+        />
+
+    <Button
+        android:id="@+id/button_ler_barcode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="60dp"
+        android:backgroundTint="#93A680"
+        android:paddingVertical="10dp"
+        android:text="Ler código de barras"
+        android:textSize="20sp" />
+
+    <EditText
+        android:id="@+id/edit_barcode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Código de barras do produto"
+        android:text=""
+        android:layout_marginHorizontal="30dp"
+        android:layout_marginVertical="10dp"
+        />
+
+    <Button
+        android:id="@+id/button_adicionar_produto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="40dp"
+        android:backgroundTint="#275EA7"
+        android:paddingVertical="20dp"
+        android:text="Adicionar produto"
+        android:textSize="20sp" />
+
+</LinearLayout>

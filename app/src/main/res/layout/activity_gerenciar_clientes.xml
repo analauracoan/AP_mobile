@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".GerenciarClientesActivity"
+    android:orientation="vertical"
+    android:background="#F2EAE4"
+    >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+        <TextView
+            android:id="@+id/text_nome_empresa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#668C3F"
+            android:gravity="center"
+            android:paddingVertical="20dp"
+            android:text="SeuCaixa"
+            android:textColor="#f2f2f2"
+            android:fontFamily="@font/funnelsans_bold"
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/text_secao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingVertical="20dp"
+            android:text="Gerenciar Clientes"
+            android:fontFamily="@font/funnelsans_bold"
+            android:textSize="25sp"
+            android:background="#B4BFA3"
+            />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/edit_nome_cliente"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="10dp"
+        android:hint="Nome Completo do Cliente"
+        />
+    <EditText
+        android:id="@+id/edit_endereco"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginVertical="10dp"
+        android:hint="Endereço do Cliente"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+        <Button
+            android:id="@+id/button_adicionar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:backgroundTint="#93A680"
+            android:paddingVertical="8dp"
+            android:text="Adicionar"
+            android:textSize="15sp" />
+        <Button
+            android:id="@+id/button_atualizar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:backgroundTint="#93A680"
+            android:paddingVertical="8dp"
+            android:text="Atualizar"
+            android:textSize="15sp" />
+        <Button
+            android:id="@+id/button_excluir"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"
+            android:backgroundTint="#93A680"
+            android:paddingVertical="8dp"
+            android:text="Excluir"
+            android:textSize="15sp" />
+    </LinearLayout>
+    <ListView
+        android:id="@+id/list_view_clientes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        />
+</LinearLayout>
