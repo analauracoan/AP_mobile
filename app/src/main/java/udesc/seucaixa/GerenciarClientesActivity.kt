@@ -15,7 +15,7 @@ import udesc.seucaixa.databinding.ActivityGerenciarProdutosBinding
 
 class GerenciarClientesActivity : AppCompatActivity() {
     private lateinit var binding: ActivityGerenciarClientesBinding
-    private lateinit var adapter: ArrayAdapter<Produto>
+    private lateinit var adapter: ArrayAdapter<Cliente>
     private var pos: Int = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {

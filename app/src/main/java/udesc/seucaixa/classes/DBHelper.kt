@@ -4,7 +4,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import androidx.core.content.contentValuesOf
 
 class DBHelper(context: Context) : SQLiteOpenHelper(context, "banco.db", null, 1) {
 
@@ -223,10 +222,10 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "banco.db", null, 1
             do {
                 val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
                 val nomeCliente = cursor.getString(cursor.getColumnIndexOrThrow("nomeCliente"))
-                val nomeProduto = cursor.getString(cursor.getColumnIndexOrThrow("nome"))
-                val quantidade = cursor.getInt(cursor.getColumnIndexOrThrow("quantidade"))
+                val nome = cursor.getString(cursor.getColumnIndexOrThrow("nome"))
+                val quantidade = cursor.getString(cursor.getColumnIndexOrThrow("quantidade"))
                 val valorTotal = cursor.getDouble(cursor.getColumnIndexOrThrow("valorTotal"))
-                listaVendas.add(Venda(id, nomeCliente, nomeProduto, quantidade, valorTotal))
+                listaVendas.add(Venda(id, nomeCliente, nome, quantidade, valorTotal))
             } while (cursor.moveToNext())
         }
         cursor.close()
@@ -239,4 +238,60 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "banco.db", null, 1
         db.close()
         return resultado
     }
+
+    fun buscarProdutoPorCodigo(codigo: String): Produto? {
+        val db = this.readableDatabase
+        val query = "SELECT * FROM produtos WHERE codigo_barras = ?"
+        val cursor = db.rawQuery(query, arrayOf(codigo))
+
+        var produto: Produto? = null
+
+        if (cursor.moveToFirst()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+            val nome = cursor.getString(cursor.getColumnIndexOrThrow("nome"))
+            val preco = cursor.getDouble(cursor.getColumnIndexOrThrow("preco"))
+            produto = Produto(id, nome, preco)
+        }
+
+        cursor.close()
+        db.close()
+
+        return produto
+    }
+
+    fun salvarVenda(venda: Venda): Boolean {
+        val db = this.writableDatabase
+        db.beginTransaction()
+
+        return try {
+            val vendaValues = ContentValues().apply {
+                put("cliente_id", venda.cliente)
+                put("data", venda.data)
+                put("valor_total", venda.valorTotal)
+            }
+            val vendaId = db.insert("vendas", null, vendaValues)
+
+            if (vendaId == -1L) throw Exception("Erro ao salvar venda")
+
+            for (produto in venda.produtos) {
+                val produtoValues = ContentValues().apply {
+                    put("venda_id", vendaId)
+                    put("produto_id", produto)
+                }
+                val resultado = db.insert("vendas_produtos", null, produtoValues)
+                if (resultado == -1L) throw Exception("Erro ao salvar produto da venda")
+            }
+
+            db.setTransactionSuccessful()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        } finally {
+            db.endTransaction()
+            db.close()
+        }
+    }
+
+
 }

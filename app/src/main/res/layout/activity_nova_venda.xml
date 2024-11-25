@@ -112,4 +112,22 @@
         android:text="Adicionar produto"
         android:textSize="20sp" />
 
+    <ListView
+        android:id="@+id/list_view_produtos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/text_valor_total"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:paddingVertical="10dp"
+        android:text="Produtos"
+        android:fontFamily="@font/funnelsans_regular"
+        android:textSize="22sp"
+        />
+
+
 </LinearLayout>
