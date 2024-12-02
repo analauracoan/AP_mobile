@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import udesc.seucaixa.classes.DBHelper
 import udesc.seucaixa.classes.Cliente
 import udesc.seucaixa.classes.Produto
-import udesc.seucaixa.classes.Venda
 import udesc.seucaixa.databinding.ActivityNovaVendaBinding
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
@@ -17,10 +16,10 @@ import android.widget.AdapterView
 class NovaVendaActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityNovaVendaBinding
+    private var barcodeProduto = Produto()
     private lateinit var db: DBHelper
-    private var clienteSelecionado: Cliente? = null
-    private val produtosSelecionados = mutableListOf<Produto>()
-    private lateinit var produtosAdapter: ArrayAdapter<String>
+    private var pos: Int = -1
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,38 +27,52 @@ class NovaVendaActivity : AppCompatActivity() {
         setContentView(binding.main)
 
         db = DBHelper(this)
-        configurarSpinnerClientes()
-        configurarBotoes()
 
-        produtosAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, mutableListOf())
-        binding.listViewProdutos.adapter = produtosAdapter
-    }
-
-    private fun configurarSpinnerClientes() {
+        var clienteSelecionado: Cliente? = null
         val listaClientes = db.clientesSelectAll()
         val clientesFormatados = listaClientes.map { it.nomeCliente }
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, clientesFormatados)
-        binding.spinnerClientes.adapter = adapter
+        val clienteAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, clientesFormatados)
+        binding.spinnerClientes.adapter = clienteAdapter
 
-        binding.spinnerClientes.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                clienteSelecionado = listaClientes[position]
+        binding.spinnerClientes.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    clienteSelecionado = listaClientes[position]
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                    clienteSelecionado = null
+                }
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                clienteSelecionado = null
-            }
-        }
-
-    }
-
-    private fun configurarBotoes() {
         binding.buttonLerBarcode.setOnClickListener {
             scanCode()
+            binding.editBarcode.setText(barcodeProduto.barcode)
         }
 
         binding.buttonAdicionarProduto.setOnClickListener {
-            finalizarVenda()
+            var barcode = binding.editBarcode.text.toString()
+            var produto = db.produtosSelectByBarcode(barcode)
+
+            if(clienteSelecionado == null) {
+                Toast.makeText(applicationContext, "Selecione o cliente!", Toast.LENGTH_SHORT).show()
+            }
+
+            val resultado = clienteSelecionado?.let { it1 -> db.itemVendaInsert(it1.id, produto.id)}
+            if (resultado != null) {
+                if(resultado > 0) {
+                    Toast.makeText(applicationContext, "Item da venda adicionado!", Toast.LENGTH_SHORT).show()
+                    binding.textProduto.text = produto.nome
+                    binding.textCliente.text = clienteSelecionado?.nomeCliente
+                } else {
+                    Toast.makeText(applicationContext, "Erro ao adicionar produto!\nVerifique os campos digitados.", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
@@ -76,59 +89,11 @@ class NovaVendaActivity : AppCompatActivity() {
     private val barLauncher = registerForActivityResult(ScanContract()) { result ->
         if (result.contents != null) {
             val barcode = result.contents.toString()
-            val produto = db.buscarProdutoPorCodigo(barcode)
-            if (produto != null) {
-                produtosSelecionados.add(produto)
-                atualizarResumoVenda()
+            if (barcodeProduto != null) {
+                binding.editBarcode.setText(barcode)
             } else {
                 Toast.makeText(this, "Produto não encontrado", Toast.LENGTH_SHORT).show()
             }
         }
-    }
-
-    private fun atualizarResumoVenda() {
-        // Atualizar a lista de produtos no adapter
-        val produtosNomes = produtosSelecionados.map { it.nome }
-        produtosAdapter.clear()
-        produtosAdapter.addAll(produtosNomes)
-        produtosAdapter.notifyDataSetChanged()
-
-        // Atualizar o valor total
-        val valorTotal = produtosSelecionados.sumOf { it.preco }
-        binding.textValorTotal.text = "Total: R$ %.2f".format(valorTotal)
-    }
-
-    private fun finalizarVenda() {
-        if (clienteSelecionado == null) {
-            Toast.makeText(this, "Selecione um cliente", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (produtosSelecionados.isEmpty()) {
-            Toast.makeText(this, "Adicione pelo menos um produto", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val venda = Venda(
-            id = 0, // O banco pode gerar automaticamente o ID
-            cliente = clienteSelecionado!!.toString(),
-            produtos = produtosSelecionados.toString(),
-            data = System.currentTimeMillis().toString(), // Formatar conforme necessário
-        )
-
-        val sucesso = db.salvarVenda(venda)
-        if (sucesso) {
-            Toast.makeText(this, "Venda concluída!", Toast.LENGTH_SHORT).show()
-            limparFormulario()
-        } else {
-            Toast.makeText(this, "Erro ao salvar venda", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun limparFormulario() {
-        produtosSelecionados.clear()
-        clienteSelecionado = null
-        binding.spinnerClientes.setSelection(0)
-        binding.textValorTotal.text = ""
     }
 }

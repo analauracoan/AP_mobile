@@ -5,13 +5,12 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class DBHelper(context: Context) : SQLiteOpenHelper(context, "banco.db", null, 1) {
+class DBHelper(context: Context) : SQLiteOpenHelper(context, "banco.db", null, 2) {
 
     val sql = arrayOf(
         "CREATE TABLE IF NOT EXISTS produtos (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT, preco DOUBLE, descricao TEXT, barcode TEXT)",
         "CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, nomeCliente TEXT, endereco TEXT)",
-        "CREATE TABLE IF NOT EXISTS vendas (id INTEGER PRIMARY KEY AUTOINCREMENT, clienteId INTEGER, produtoId INTEGER, quantidade INTEGER, valorTotal DOUBLE, " +
-                "FOREIGN KEY(clienteId) REFERENCES clientes(id), FOREIGN KEY(produtoId) REFERENCES produtos(id))"
+        "CREATE TABLE IF NOT EXISTS itemVenda (id INTEGER PRIMARY KEY AUTOINCREMENT, clienteId INTEGER, produtoId INTEGER, FOREIGN KEY(clienteId) REFERENCES clientes(id), FOREIGN KEY(produtoId) REFERENCES produtos(id))",
     )
 
     override fun onCreate(db: SQLiteDatabase?) {
@@ -21,9 +20,9 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "banco.db", null, 1
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        db?.execSQL("DROP TABLE IF EXISTS vendas")
         db?.execSQL("DROP TABLE IF EXISTS produtos")
         db?.execSQL("DROP TABLE IF EXISTS clientes")
+        db?.execSQL("DROP TABLE IF EXISTS itemVenda")
         onCreate(db)
     }
 
@@ -32,6 +31,31 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "banco.db", null, 1
     // PRODUTOS
 
 
+
+    fun produtosSelectByBarcode(barcode: String): Produto {
+        val db = this.readableDatabase
+        val p = db.rawQuery("SELECT * FROM produtos WHERE barcode = ?", arrayOf(barcode.toString()))
+        var produto: Produto = Produto()
+        if (p.count == 1) {
+            p.moveToFirst()
+
+            val idIndex = p.getColumnIndex("id")
+            val idNome = p.getColumnIndex("nome")
+            val idPreco = p.getColumnIndex("preco")
+            val idDescricao = p.getColumnIndex("descricao")
+            val idBarcode = p.getColumnIndex("barcode")
+
+            if (idIndex != -1 && idNome != -1 && idPreco != -1 && idDescricao != -1 && idBarcode != -1) {
+                val id = p.getInt(idIndex)
+                val nome = p.getString(idNome)
+                val preco = p.getDouble(idPreco)
+                val descricao = p.getString(idDescricao)
+                val barcode = p.getString(idBarcode)
+                produto = Produto(id, nome, preco, descricao, barcode)
+            }
+        }
+        return produto
+    }
 
     fun produtosSelectById(id: Int): Produto {
         val db = this.readableDatabase
@@ -191,107 +215,38 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "banco.db", null, 1
 
 
 
-    // VENDAS
+    // ITEM VENDA PRODUTO
 
 
 
-    fun vendasInsert(clienteId: Int, produtoId: Int, quantidade: Int, valorTotal: Double): Long {
+    fun itemVendaSelectById(id: Int): ItemVenda {
+        val db = this.readableDatabase
+        val p = db.rawQuery("SELECT * FROM itemVenda WHERE id = ?", arrayOf(id.toString()))
+        var itemVenda: ItemVenda = ItemVenda()
+        if (p.count == 1) {
+            p.moveToFirst()
+
+            val idIndex = p.getColumnIndex("id")
+            val clienteId = p.getColumnIndex("clienteId")
+            val produtoId = p.getColumnIndex("produtoId")
+
+            if (idIndex != -1 && clienteId != -1 && produtoId != -1) {
+                val id = p.getInt(idIndex)
+                val clienteId = p.getInt(clienteId)
+                val produtoId = p.getInt(produtoId)
+                itemVenda = ItemVenda(id, clienteId, produtoId)
+            }
+        }
+        return itemVenda
+    }
+
+    fun itemVendaInsert(clienteId: Int, produtoId: Int): Long {
         val db = this.writableDatabase
         val contentValues = ContentValues()
         contentValues.put("clienteId", clienteId)
         contentValues.put("produtoId", produtoId)
-        contentValues.put("quantidade", quantidade)
-        contentValues.put("valorTotal", valorTotal)
-        val resultado = db.insert("vendas", null, contentValues)
+        val resultado = db.insert("itemVenda", null, contentValues)
         db.close()
         return resultado
     }
-
-    fun vendasSelectAll(): ArrayList<Venda> {
-        val db = this.readableDatabase
-        val cursor = db.rawQuery(
-            "SELECT vendas.id, clientes.nomeCliente, produtos.nome, vendas.quantidade, vendas.valorTotal " +
-                    "FROM vendas " +
-                    "INNER JOIN clientes ON vendas.clienteId = clientes.id " +
-                    "INNER JOIN produtos ON vendas.produtoId = produtos.id",
-            null
-        )
-        val listaVendas = ArrayList<Venda>()
-        if (cursor.count > 0) {
-            cursor.moveToFirst()
-            do {
-                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
-                val nomeCliente = cursor.getString(cursor.getColumnIndexOrThrow("nomeCliente"))
-                val nome = cursor.getString(cursor.getColumnIndexOrThrow("nome"))
-                val quantidade = cursor.getString(cursor.getColumnIndexOrThrow("quantidade"))
-                val valorTotal = cursor.getDouble(cursor.getColumnIndexOrThrow("valorTotal"))
-                listaVendas.add(Venda(id, nomeCliente, nome, quantidade, valorTotal))
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        return listaVendas
-    }
-
-    fun vendasDelete(id: Int): Int {
-        val db = this.writableDatabase
-        val resultado = db.delete("vendas", "id = ?", arrayOf(id.toString()))
-        db.close()
-        return resultado
-    }
-
-    fun buscarProdutoPorCodigo(codigo: String): Produto? {
-        val db = this.readableDatabase
-        val query = "SELECT * FROM produtos WHERE codigo_barras = ?"
-        val cursor = db.rawQuery(query, arrayOf(codigo))
-
-        var produto: Produto? = null
-
-        if (cursor.moveToFirst()) {
-            val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
-            val nome = cursor.getString(cursor.getColumnIndexOrThrow("nome"))
-            val preco = cursor.getDouble(cursor.getColumnIndexOrThrow("preco"))
-            produto = Produto(id, nome, preco)
-        }
-
-        cursor.close()
-        db.close()
-
-        return produto
-    }
-
-    fun salvarVenda(venda: Venda): Boolean {
-        val db = this.writableDatabase
-        db.beginTransaction()
-
-        return try {
-            val vendaValues = ContentValues().apply {
-                put("cliente_id", venda.cliente)
-                put("data", venda.data)
-                put("valor_total", venda.valorTotal)
-            }
-            val vendaId = db.insert("vendas", null, vendaValues)
-
-            if (vendaId == -1L) throw Exception("Erro ao salvar venda")
-
-            for (produto in venda.produtos) {
-                val produtoValues = ContentValues().apply {
-                    put("venda_id", vendaId)
-                    put("produto_id", produto)
-                }
-                val resultado = db.insert("vendas_produtos", null, produtoValues)
-                if (resultado == -1L) throw Exception("Erro ao salvar produto da venda")
-            }
-
-            db.setTransactionSuccessful()
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        } finally {
-            db.endTransaction()
-            db.close()
-        }
-    }
-
-
 }
